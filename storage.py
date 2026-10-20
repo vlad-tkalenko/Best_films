@@ -1,36 +1,50 @@
-FILE = "data.txt"
+import sqlite3
 
-def load(filename: str) -> str:
-    """Return list of dictionaries from text file. Skip broken rows"""
-    records = []
-    try:
-        f = open(filename, "r", encoding="utf-8")
-    except FileNotFoundError:
-        return records              # No file found: return empty records
+DB = "data.db"
 
-    with f:
-        for line in f:
-            line = line.strip()
-            if line == "":
-                continue
-            parts = line.split(";")
-            try:
-                record = {
-                    "name": parts[0],
-                    "year": parts[1],
-                    "category": parts[2],
-                    "duration": parts[3],
-                    "rating": parts[4],
-                    "actors": parts[5]
-                }
-            except (IndexError, ValueError):
-                print("Skip broken line:", line)
-                continue
-            records.append(record)
-    return records
+def connect():
+    conn = sqlite3.connect(DB)
+    conn.row_factory = sqlite3.Row      # рядки можна читати як словники (default as a tuple)
+    return conn
 
-def save(filename: str, records: list[dict]) -> None:
-    """Write records into a file"""
-    with open(filename, "w", encoding="utf-8") as f:
-        for r in records:
-            f.write(f"{r["name"]};{r["year"]};{r["category"]};{r["duration"]};{r["rating"]};{r["actors"]}\n")
+def init():
+    """Створює таблицю, якщо її ще немає."""
+    with connect() as conn:
+        conn.execute("""CREATE TABLE IF NOT EXISTS films (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            year INTEGER NOT NULL,
+            category TEXT NOT NULL,
+            duration TEXT NOT NULL,
+            rating INT NOT NULL,
+            actors TEXT NOT NULL)""")
+
+def load(category=None):
+    """Повертає список словників, за бажанням лише однієї категорії."""
+    init()
+    with connect() as conn:
+        if category is None:
+            rows = conn.execute("SELECT * FROM films ORDER BY year DESC").fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM films WHERE category = ? ORDER BY year DESC",
+                                (category,)).fetchall()
+    result = []
+    for row in rows:
+        result.append(dict(row))
+    return result
+
+def add(record: dict):
+    """Додає запис і повертає його id."""
+    init()
+    name, year, category, duration, rating, actors = record['name'], record['year'], record['category'], record['duration'], record['rating'], record['actors']
+    with connect() as conn:
+        cur = conn.execute("INSERT INTO films (name, year, category, duration, rating, actors) VALUES (?, ?, ?, ?, ?, ?)",
+                           (name, year, category, str(duration), rating, actors))
+        return cur.lastrowid
+
+def delete(item_id):
+    """Видаляє запис. Повертає True, якщо такий був."""
+    init()
+    with connect() as conn:
+        cur = conn.execute("DELETE FROM films WHERE id = ?", (item_id,))
+        return cur.rowcount > 0

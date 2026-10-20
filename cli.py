@@ -4,7 +4,7 @@ from datetime import timedelta
 
 def main():
     if len(sys.argv) < 2:
-        print("використання: python cli.py add|list|find|remove ...")
+        print("використання: python cli.py add|list|find|report|remove ...")
         return
     command = sys.argv[1]
 
@@ -40,6 +40,16 @@ def main():
 
     elif command == "report":
         print(logic.films_by_category())
+    elif command == "remove":
+        if len(sys.argv) < 3:
+            print("використання: python cli.py remove record_id")
+            return
+        record_id = sys.argv[2]
+        is_removed = logic.remove_record(record_id)
+        if is_removed:
+            print("Запис був видалений")
+        else:
+            print("Запису з таким id не було в таблиці")
     else:
         print("невідома команда:", command)
 
