@@ -39,3 +39,27 @@ pip install -r requirements.txt
 pip install gunicorn
 pip freeze > requirements.txt
 ```
+### Підняти gunicorn
+```gunicorn -w 2 -b 127.0.0.1:8000 app:app```
+### Налаштувати автоматичний запуск через systemd
+```
+sudo cp deploy/bestfilms.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now bestfilms
+sudo systemctl status bestfilms
+```
+### Налаштувати nginx
+```
+sudo cp deploy/nginx.conf /etc/nginx/sites-available/bestfilms
+sudo ln -s /etc/nginx/sites-available/bestfilms /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/default
+sudo nginx -t                      
+sudo systemctl reload nginx
+```
+### Отримати https сертифікат (після створення домену)
+```
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/local/bin/certbot
+sudo certbot --nginx -d api.papagaichik.pp.ua
+```
+Після всіх команд, сайт відкривається за [url](https://api.papagaichik.pp.ua/films)
