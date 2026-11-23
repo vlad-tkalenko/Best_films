@@ -25,3 +25,17 @@
 
 ## Формат даних
 data.db, один запис: Ім'я фільму;рік;категорія;довжина фільму (годин:хвилин:секунд);рейтинг;список акторів
+
+## Розгортання
+
+### Розгортання коду
+'''
+cd ~
+git clone https://github.com/vlad-tkalenko/Best_films.git
+cd Best_films
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+pip install gunicorn
+pip freeze > requirements.txt
+'''
