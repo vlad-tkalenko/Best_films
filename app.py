@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import storage
 import logic
 from datetime import timedelta
 
 app = Flask(__name__)
+CORS(app, origins=["https://papagaichik.pp.ua"])
 storage.init()
 
 @app.get("/films")
